@@ -81,7 +81,11 @@ class ListingDataSource: NSObject, UICollectionViewDataSource, UICollectionViewD
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: collectionView.frame.size.width, height: 450)
+        let reuseIdentifier =  CampaignListingView.Cells.campaignCell.rawValue
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath)
+
+        return size(collectionView, cell, indexPath)
+        //CGSize(width: collectionView.frame.size.width, height: 450)
     }
 
 }
@@ -108,4 +112,32 @@ class LoadingDataSource: NSObject, UICollectionViewDataSource, UICollectionViewD
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
         return collectionView.frame.size
     }
+}
+
+extension ListingDataSource {
+    func size(_ collectionView: UICollectionView,_ cell: UICollectionViewCell, _ index: IndexPath) -> CGSize {
+        let campaign = campaigns[index.item]
+        let width = collectionView.frame.size.width
+        let margin = LayoutMargin.leadingMargin + LayoutMargin.trailingMargin
+        if let campaignCell = cell as? CampaignCell {
+            let titleAttribute = [NSAttributedString.Key.font: campaignCell.nameLabel.font]
+            let titleString = NSAttributedString.init(string: campaign.name, attributes: titleAttribute)
+            
+            let titleHeight = titleString.boundingRect(with: CGSize(width: width - CGFloat(margin), height: CGFloat(MAXFLOAT)), options: NSStringDrawingOptions.usesLineFragmentOrigin, context: nil).size.height
+            
+            let descriptionAttribute = [NSAttributedString.Key.font: campaignCell.descriptionLabel.font]
+
+            let descriptionString = NSAttributedString.init(string: campaign.description, attributes: descriptionAttribute)
+            
+            let descriptionHeight = descriptionString.boundingRect(with: CGSize(width: width - CGFloat(margin), height: CGFloat(MAXFLOAT)), options: NSStringDrawingOptions.usesLineFragmentOrigin, context: nil).size.height
+            let ratio = CGFloat((campaignCell.imageView.frame.size.width)) / CGFloat((campaignCell.imageView.frame.size.height))
+            let newHeight = width / CGFloat(ratio)
+            let finalHeight = newHeight + descriptionHeight + titleHeight + CGFloat(LayoutMargin.heightMargin)
+            return CGSize(width: width, height: finalHeight)
+        }
+
+        let defaultSize = CGSize(width: width, height: 450)
+        return defaultSize
+    }
+
 }
